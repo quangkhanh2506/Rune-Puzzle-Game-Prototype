@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
 using UnityEngine.UIElements;
+using TMPro;
 
 public class Grid : MonoBehaviour
 {
@@ -24,12 +25,12 @@ public class Grid : MonoBehaviour
     private List<List<int>> listEnemyShapePositionGrid = new List<List<int>>();
     private List<int[]> _completedEnemyLines = new List<int[]>();
 
-    // Start is called before the first frame update
     public void SetupGameplay()
     {
+        shapeStore.RefeshPositionShape();
         shapeStore.StoreCreateShape();
-        GameManager.instance.TurnManager.ReGame();
-        GameManager.instance.TurnManager.StartTurnManager();
+        GameManager.instance.turnManager.ReGame();
+        GameManager.instance.turnManager.StartTurnManager();
         foreach (var square in _gripSquares)
         {
             square.GetComponent<GridSquare>().DeActivate();
@@ -39,7 +40,7 @@ public class Grid : MonoBehaviour
             CreateGrid();
         CountNumberGridCanBeInteractAllMyShape();
         CountNumberGridCanBeInteractAllEnemyShape();
-        GameManager.instance.TurnManager.ChangeTurn();
+        GameManager.instance.turnManager.ChangeTurn();
     }
 
     private void OnDisable()
@@ -94,7 +95,7 @@ public class Grid : MonoBehaviour
     IEnumerator DestroyAndProceed()
     {
         int index = -1;
-        if (GameManager.instance.TurnManager.GetTurn() % 2 == 1)
+        if (GameManager.instance.turnManager.GetTurn() % 2 == 1)
         {
             for (int i = 3; i < shapeStore.createShapes.Count; i++)
             {
@@ -126,8 +127,8 @@ public class Grid : MonoBehaviour
         }
 
         Destroy(shapeStore.currentShape.gameObject);
-        yield return new WaitForSeconds(0.1f); // Wait for one frame
 
+        yield return new WaitForSeconds(0.1f); // Wait for one frame
         
         CheckIfAnylineIsCompleted();
 
@@ -182,7 +183,7 @@ public class Grid : MonoBehaviour
 
         if (Play)
         {
-            GameManager.instance.TurnManager.ChangeTurn();
+            GameManager.instance.turnManager.ChangeTurn();
 
             Play = !Result();
 
@@ -197,7 +198,7 @@ public class Grid : MonoBehaviour
 
     public void PutShapeEnemy()
     {
-        if (GameManager.instance.TurnManager.GetTurn() % 2 == 0)
+        if (GameManager.instance.turnManager.GetTurn() % 2 == 0)
         {
             var a = CheckEnemyCanCompletedLine();
             PutSquareEnemy(shapeStore.createShapes[a.Item1].transform.GetChild(0).gameObject, a.Item2);
@@ -232,7 +233,7 @@ public class Grid : MonoBehaviour
 
     public bool Result()
     {
-        int result = GameManager.instance.TurnManager.CheckResults();
+        int result = GameManager.instance.turnManager.CheckResults();
         bool a = false;
 
         if (result == 1 || result == -1)
@@ -240,10 +241,22 @@ public class Grid : MonoBehaviour
             ClearALLEnemyShapePositionCanInteract();
             ClearALLMyShapePositionCanInteract();
             a = true;
+            for(int i=0; i < shapeStore.createShapes.Count; i++)
+            {
+                shapeStore.createShapes[i].GetComponent<BoxCollider2D>().enabled = false;
+            }
         }
 
-        if (result == 1) Debug.Log("Win");
-        else if (result == -1) Debug.Log("Lose");
+        if (result == 1)
+        {
+            GameManager.instance.uiResult.SetActive(true);
+            GameManager.instance.uiResult.GetComponentInChildren<TextMeshProUGUI>().text = "WIN";
+        }
+        else if (result == -1)
+        {
+            GameManager.instance.uiResult.SetActive(true);
+            GameManager.instance.uiResult.GetComponentInChildren<TextMeshProUGUI>().text = "LOSE";
+        }
         return a;
     }
 
@@ -732,7 +745,7 @@ public class Grid : MonoBehaviour
             if (lineCompleted)
             {
                 completedLines.Add(line);
-                GameManager.instance.TurnManager.GetPonit();
+                GameManager.instance.turnManager.GetPonit();
             }
         }
 
@@ -825,13 +838,15 @@ public class Grid : MonoBehaviour
 
     public void ResetMatch()
     {
+        GameManager.instance.uiResult.SetActive(false);
         foreach (var square in _gripSquares)
         {
             square.GetComponent<GridSquare>().DeActivate();
             square.GetComponent<GridSquare>().ClearOccupied();
         }
         shapeStore.RefeshPositionShape();
-        GameManager.instance.TurnManager.ReGame();
-        GameManager.instance.TurnManager.ChangeTurn();
+        GameManager.instance.turnManager.ReGame();
+        GameManager.instance.turnManager.ChangeTurn();
+        SetupGameplay();
     }
 }

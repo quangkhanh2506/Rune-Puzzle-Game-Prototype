@@ -6,7 +6,10 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
     public Grid grid;
-    public TurnManager TurnManager;
+    public TurnManager turnManager;
+    public GameObject uiResult;
+    public GameObject uiHome;
+    public GameObject uiGamePlay;
 
     private void Awake()
     {
@@ -25,7 +28,8 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        grid.SetupGameplay();
+        uiGamePlay.SetActive(false);
+        uiResult.SetActive(false);
     }
 
 }

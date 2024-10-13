@@ -17,6 +17,8 @@ public class TurnManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI txt_Point_Player;
     [SerializeField] private TextMeshProUGUI txt_Point_Bot;
 
+    private int win_Point = 5;
+
     private int point_Player;
     private int point_Bot;
 
@@ -54,27 +56,29 @@ public class TurnManager : MonoBehaviour
 
     private void Update()
     {
-        timer -= Time.deltaTime;
-        if (timer < 0)
+        if(GameManager.instance.uiGamePlay.activeSelf == true)
         {
-            ChangeTurn();
-            GameEvent.MoveShapeToStartPosition();
-            if (Turn % 2 == 0)
+            timer -= Time.deltaTime;
+            if (timer < 0)
             {
-                if(CheckResults() != 1 && CheckResults() != -1)
+                ChangeTurn();
+                GameEvent.MoveShapeToStartPosition();
+                if (Turn % 2 == 0)
                 {
-                    GameManager.instance.grid.PutShapeEnemy();
+                    if (CheckResults() != 1 && CheckResults() != -1)
+                    {
+                        GameManager.instance.grid.PutShapeEnemy();
+                    }
+
                 }
-                
             }
         }
-        
     }
 
     public int CheckResults()
     {
-        if (point_Bot == 5) return -1;
-        else if (point_Player == 5) return 1;
+        if (point_Bot == win_Point) return -1;
+        else if (point_Player == win_Point) return 1;
 
         var shapes = Turn % 2 == 1 ? myShapes : enemyShapes;
         int numberShapeNotNull = 0;
